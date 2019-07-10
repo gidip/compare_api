@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title> Compare Website</title>
+    <!-- Vue development version, includes helpful console warnings -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- Link to JavaScript for Vue Library -->
+    <script type="text/javascript" src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- Axion library -->
+    <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js "></script>
+    <script src=" https://unpkg.com/vue "></script>
+
+    <!--CSS LINKS-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+
+    </style>
+
+</head>
+
+<body>
+    <div>
+        <br>
+        &nbsp; &nbsp;
+        <img src="logo.png" alt="Logo" style="width:100%;height:180px;border:0;">
+    </div>
+
+    <!-- Outputs properties data -- Menu -->
+    <div class="app" id="app">
+        <div class="topnav">
+            <a class="active" href="http://localhost:8080">Home</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+            <div class="search-container">
+                <input type="text" placeholder="e.g. Hendon or NW4" id="search">
+                <button v-on:click="doSearch"><i class="fa fa-search"></i></button>
+            </div>
+        </div>
+        <br>
+
+        <div class="table-properties">
+            <table v-for="property in properties" cellspacing="1">
+                <tr>
+                    <th><b><h3>Image</h3></b></th>
+                    <th><b> <h3>Agent</h3></b></th>
+                    <th width="230"><b><h3>Description</h3></b></th>
+                    <th><b><h3>Location</h3></b></th>
+                    <th><b> <h3>Price</h3></b></th>
+                    <th><b> <h3>View</h3></b></th>
+                </tr>
+                <tr>
+                    <td>
+                    <img :src="property.img_link" alt="Image" width="250" height="200"/></div>
+                    </td>
+                    <td> <b><h3>{{property.agent_name}} <br> {{property.agent_phone}}</h3></b></td>
+                    <td><b> <h3>{{property.description}}</h3></b> </td>
+                    <td><b><h3> {{property.location}}</h3></b></td>
+                    <td><b><h3> £{{property.price}}</h3></b></td>
+                    <td><a v-bind:href="property.view_link" target="_blank"><b><h3>View</h3></b></a></td>
+                </tr>
+
+            </table>
+        </div>
+
+        
+
+        <!-- Buttons for pagination -->
+        <div>
+            <p>Page number: {{pageNumber+1}} 0f {{numPages}} </p>
+            <button v-on:click="previousPage" class="previousPage" id="previousPageButton">Previous</button>
+            <button v-on:click="nextPage" class="nextPage" id="nextPageButton">Next</button>
+        </div>
+
+        <script>
+            var app = new Vue({
+                //Select an elements by
+                el: '#app',
+                data: {
+                    properties: [],
+                    agent: [],
+                    numPages: 0,
+                    numItemsPerPages: 10,
+                    pageNumber: 0,
+                    sortColumn: ''
+                },
+                methods: {
+                    //Get all the properties from the web service using Axios.
+                    doSearch: function () {
+                        var localApp = this;
+
+                        //Calculate offset
+                        var offset = this.pageNumber * this.numItemsPerPage;
+
+                        //Pagination not working properly !!!!
+                        var searchQuery = document.getElementById('search').value;
+                        var url = "/property/?search=" + searchQuery;
+
+                        console.log("URL: " + url);
+
+                        axios.get(url)//Send get request to properties paths
+                            .then(function (response) { //request successfull
+                                // Point properties in data to returned array of properties
+                                localApp.properties = response.data.data;
+                                console.log(JSON.stringify(response).data.property);
+
+                                //calculate number of pages
+                                localApp.numPages = Math.ceil(response.data.totNumItems / localApp.numItemsPerPage);
+                            })
+
+                            .catch(function (error) {
+
+                                //handle errors
+                                console.log(error);
+                            });
+                    },
+                    nextPage: function () {
+
+                        //disable button if we have reached the end
+                        if (this.pageNumber === this.numPages - 1)
+                            document.getElementById("nextPageButton").disabled = true;
+
+                        //increase the page number
+                        this.pageNumber++;
+
+                        //load the next set of properties
+                        // this.doSearch();
+
+                        //check if the previous button is disabled
+                        if (document.getElementById("previousPageButton").disabled)
+                            document.getElementById("previousPageButton").disabled = false;
+
+                    },
+
+                    previousPage: function () {
+                        //decrease the page number
+                        this.pageNumber--;
+
+                        //load the next set of properties
+                        // this.doSearch();
+
+                        //disable button if we have reached the end
+                        if (this.pageNumber === this.numPages - 1)
+                            document.getElementById("previousPageButton").disabled = true;
+                    }
+
+                },
+
+                //Vue lifecycle hook, called when data is loaded.
+                created: function () {
+                    //load properties from web service
+                    // this.loadAllProperties();
+                }
+            })
+
+        </script>
+
+
+</body>
+
+</html>
